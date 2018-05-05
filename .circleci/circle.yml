@@ -1,9 +1,9 @@
 version: 2
 jobs:
-  build_and_test_jdk9:
-    working_directory: ~/authmereloaded-jdk9
+  build_and_test_jdk8:
+    working_directory: ~/authmereloaded-jdk8
     docker:
-      - image: circleci/openjdk:9-jdk
+      - image: circleci/openjdk:8-jdk
     environment:
         MAVEN_OPTS: -Xmx2048m
     steps:
@@ -48,5 +48,5 @@ workflows:
   version: 2
   build_and_test:
     jobs:
-      - build_and_test_jdk9
+      - build_and_test_jdk8
       - build_and_test_jdk10
