@@ -6,11 +6,14 @@
 
     <groupId>org.dragonet.proxy</groupId>
     <artifactId>dragonproxy-parent</artifactId>
-    <version>0.3.4.5-SNAPSHOT</version>
+    <version>0.4.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>DragonProxy</name>
-    <description>A proxy to allow Minecraft: Bedrock clients to connect to Minecraft: Java Edition servers.</description>
+    <name>DragonProxy Parent</name>
+    <description>
+        The parent module for DragonProxy, a proxy that allows Minecraft: Bedrock clients to connect to Minecraft: Java
+        Edition servers.
+    </description>
     <inceptionYear>2016</inceptionYear>
     <url>https://dragonet.org/</url>
 
@@ -46,6 +49,14 @@
         </repository>
     </distributionManagement>
 
+    <licenses>
+        <license>
+            <name>The GNU General Public Licence version 3 (GPLv3)</name>
+            <url>http://www.gnu.org/licenses/gpl-3.0.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
     <modules>
         <module>commons</module>
         <module>protocol</module>
@@ -61,7 +72,7 @@
 
     <repositories>
         <repository>
-            <id>CodeMC-repo</id>
+            <id>codenmc-repo</id>
             <url>https://repo.codemc.org/repository/maven-public</url>
             <releases>
                 <enabled>true</enabled>
@@ -96,14 +107,45 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.7.0</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>1.9</source>
+                    <target>1.9</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>3.0</version>
+                <configuration>
+                    <header>gpl3-header.txt</header>
+                    <properties>
+                        <owner>Dragonet Foundation</owner>
+                        <email>https://github.com/DragonetMC/DragonProxy</email>
+                    </properties>
+                    <mapping>
+                        <java>SLASHSTAR_STYLE</java>
+                    </mapping>
+                    <includes>
+                        <include>src/test/java/**</include>
+                        <include>src/main/java/**</include>
+                    </includes>
+                    <useDefaultExcludes>true</useDefaultExcludes>
+                    <excludes>
+                        <exclude>**/co/aikar/**</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>format</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.20.1</version>
+                <version>2.21.0</version>
                 <configuration>
                     <skip>true</skip> <!-- No unit tests to run atm -->
                     <!-- Force the right file encoding during unit testing -->
@@ -118,16 +160,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.4</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>aggregate</goal>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
+                <version>3.0.0</version>
                 <configuration>
                     <show>public</show>
                     <failOnError>false</failOnError>
@@ -137,19 +170,11 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
                 <version>3.0.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.1.1</version>
                 <configuration>
                     <createDependencyReducedPom>false</createDependencyReducedPom>
                     <minimizeJar>true</minimizeJar>

@@ -7,10 +7,16 @@
     <parent>
         <groupId>org.dragonet.proxy</groupId>
         <artifactId>dragonproxy-parent</artifactId>
-        <version>0.3.4.5-SNAPSHOT</version>
+        <version>0.4.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>dragonproxy-protocol</artifactId>
+
+    <name>DragonProxy Protocol</name>
+    <description>
+        The protocol library for the DragonProxy project, a proxy that allows Minecraft: Bedrock clients
+        to connect to Minecraft: Java Edition servers.
+    </description>
 
     <repositories>
         <repository>
