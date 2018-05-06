@@ -21,10 +21,10 @@ import org.dragonet.protocol.packets.RemoveEntityPacket;
 
 public class PCDestroyEntitiesPacketTranslator implements IPCPacketTranslator<ServerEntityDestroyPacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerEntityDestroyPacket packet) {
-        PEPacket[] ret = new PEPacket[packet.getEntityIds().length];
+    public PEPacket[] translate(UpstreamSession session, ServerEntityDestroyPacket originalPacket) {
+        PEPacket[] ret = new PEPacket[originalPacket.getEntityIds().length];
         for (int i = 0; i < ret.length; i++) {
-            CachedEntity e = session.getEntityCache().removeByRemoteEID(packet.getEntityIds()[i]);
+            CachedEntity e = session.getEntityCache().removeByRemoteEID(originalPacket.getEntityIds()[i]);
             if (e == null) {
                 continue;
             }

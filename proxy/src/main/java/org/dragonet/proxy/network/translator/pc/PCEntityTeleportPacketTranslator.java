@@ -23,17 +23,17 @@ import org.dragonet.protocol.packets.MoveEntityPacket;
 
 public class PCEntityTeleportPacketTranslator implements IPCPacketTranslator<ServerEntityTeleportPacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerEntityTeleportPacket packet) {
-        CachedEntity entity = session.getEntityCache().getByRemoteEID(packet.getEntityId());
+    public PEPacket[] translate(UpstreamSession session, ServerEntityTeleportPacket originalPacket) {
+        CachedEntity entity = session.getEntityCache().getByRemoteEID(originalPacket.getEntityId());
         if (entity == null) {
-            if (packet.getEntityId() == (int) session.getDataCache().get(CacheKey.PLAYER_EID)) {
+            if (originalPacket.getEntityId() == (int) session.getDataCache().get(CacheKey.PLAYER_EID)) {
                 entity = session.getEntityCache().getClientEntity();
             } else {
                 return null;
             }
         }
 
-        entity.absoluteMove(packet.getX(), packet.getY(), packet.getZ(), packet.getYaw(), packet.getPitch());
+        entity.absoluteMove(originalPacket.getX(), originalPacket.getY(), originalPacket.getZ(), originalPacket.getYaw(), originalPacket.getPitch());
 
         if (entity.shouldMove) {
             MoveEntityPacket pk = new MoveEntityPacket();
@@ -42,7 +42,7 @@ public class PCEntityTeleportPacketTranslator implements IPCPacketTranslator<Ser
             pk.headYaw = (byte) (entity.headYaw / (360d / 256d));
             pk.pitch = (byte) (entity.pitch / (360d / 256d));
             pk.position = new Vector3F((float) entity.x, (float) entity.y + entity.peType.getOffset(), (float) entity.z);
-            pk.onGround = packet.isOnGround();
+            pk.onGround = originalPacket.isOnGround();
             entity.shouldMove = false;
             return new PEPacket[]{pk};
         }

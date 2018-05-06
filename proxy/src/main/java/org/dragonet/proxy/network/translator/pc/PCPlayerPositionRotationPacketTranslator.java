@@ -52,7 +52,7 @@ import org.dragonet.common.maths.NukkitMath;
 public class PCPlayerPositionRotationPacketTranslator implements IPCPacketTranslator<ServerPlayerPositionRotationPacket> {
 
     @Override
-    public PEPacket[] translate(UpstreamSession session, ServerPlayerPositionRotationPacket packet) {
+    public PEPacket[] translate(UpstreamSession session, ServerPlayerPositionRotationPacket originalPacket) {
 
         CachedEntity entityPlayer = session.getEntityCache().getClientEntity();
         if (entityPlayer == null) {
@@ -74,10 +74,10 @@ public class PCPlayerPositionRotationPacketTranslator implements IPCPacketTransl
                 ret.seed = 0;
                 ret.generator = 1;
                 ret.gamemode = restored.getGameMode() == GameMode.CREATIVE ? 1 : 0;
-                ret.spawnPosition = new BlockPosition((int) packet.getX(), (int) packet.getY(), (int) packet.getZ());
-                ret.position = new Vector3F((float) packet.getX(), (float) packet.getY() + EntityType.PLAYER.getOffset() + 0.1f, (float) packet.getZ());
-                ret.yaw = packet.getYaw();
-                ret.pitch = packet.getPitch();
+                ret.spawnPosition = new BlockPosition((int) originalPacket.getX(), (int) originalPacket.getY(), (int) originalPacket.getZ());
+                ret.position = new Vector3F((float) originalPacket.getX(), (float) originalPacket.getY() + EntityType.PLAYER.getOffset() + 0.1f, (float) originalPacket.getZ());
+                ret.yaw = originalPacket.getYaw();
+                ret.pitch = originalPacket.getPitch();
                 ret.levelId = "";
                 ret.worldName = "World";
                 ret.commandsEnabled = true;
@@ -87,7 +87,7 @@ public class PCPlayerPositionRotationPacketTranslator implements IPCPacketTransl
                 session.sendPacket(ret, true);
             }
 
-            entityPlayer.absoluteMove(packet.getX(), packet.getY() + entityPlayer.peType.getOffset() + 0.1f, packet.getZ(), packet.getYaw(), packet.getPitch());
+            entityPlayer.absoluteMove(originalPacket.getX(), originalPacket.getY() + entityPlayer.peType.getOffset() + 0.1f, originalPacket.getZ(), originalPacket.getYaw(), originalPacket.getPitch());
             session.getChunkCache().sendOrderedChunks();
 
             ByteArrayDataOutput out = ByteStreams.newDataOutput();
@@ -153,10 +153,10 @@ public class PCPlayerPositionRotationPacketTranslator implements IPCPacketTransl
                 MovePlayerPacket pk = new MovePlayerPacket();
                 pk.rtid = entityPlayer.proxyEid;
                 pk.mode = MovePlayerPacket.MODE_TELEPORT;
-                pk.position = new Vector3F((float) packet.getX(), (float) packet.getY() + EntityType.PLAYER.getOffset() + 0.1f, (float) packet.getZ());
-                pk.yaw = packet.getYaw();
-                pk.pitch = packet.getPitch();
-                pk.headYaw = packet.getYaw();
+                pk.position = new Vector3F((float) originalPacket.getX(), (float) originalPacket.getY() + EntityType.PLAYER.getOffset() + 0.1f, (float) originalPacket.getZ());
+                pk.yaw = originalPacket.getYaw();
+                pk.pitch = originalPacket.getPitch();
+                pk.headYaw = originalPacket.getYaw();
 
                 if (entityPlayer.riding != 0) {
                     CachedEntity vehicle = session.getEntityCache().getByLocalEID(entityPlayer.riding);
@@ -177,7 +177,7 @@ public class PCPlayerPositionRotationPacketTranslator implements IPCPacketTransl
             DragonProxy.getInstance().getLogger().info("Spawning " + session.getUsername() + " in world " + entityPlayer.dimention + " at " + entityPlayer.x + "/" + entityPlayer.y + "/" + entityPlayer.z);
 
             // send the confirmation
-            ClientTeleportConfirmPacket confirm = new ClientTeleportConfirmPacket(packet.getTeleportId());
+            ClientTeleportConfirmPacket confirm = new ClientTeleportConfirmPacket(originalPacket.getTeleportId());
             ((PCDownstreamSession) session.getDownstream()).send(confirm);
 
             PlayerListPacket playerListPacket = new PlayerListPacket();
@@ -205,12 +205,12 @@ public class PCPlayerPositionRotationPacketTranslator implements IPCPacketTransl
             return null;
         }
 
-        entityPlayer.absoluteMove(packet.getX(), packet.getY() + entityPlayer.peType.getOffset() + 0.1f, packet.getZ(), packet.getYaw(), packet.getPitch());
+        entityPlayer.absoluteMove(originalPacket.getX(), originalPacket.getY() + entityPlayer.peType.getOffset() + 0.1f, originalPacket.getZ(), originalPacket.getYaw(), originalPacket.getPitch());
         session.getChunkCache().sendOrderedChunks();
 
         float offset = 0.01f;
         byte mode = MovePlayerPacket.MODE_NORMAL;
-        ChunkPos chunk = new ChunkPos(NukkitMath.ceilDouble(packet.getX()) >> 4, NukkitMath.ceilDouble(packet.getZ()) >> 4);
+        ChunkPos chunk = new ChunkPos(NukkitMath.ceilDouble(originalPacket.getX()) >> 4, NukkitMath.ceilDouble(originalPacket.getZ()) >> 4);
         // check if destination is out of range
         boolean contains = session.getChunkCache().getLoadedChunks().contains(chunk);
         if (!contains) {
@@ -225,10 +225,10 @@ public class PCPlayerPositionRotationPacketTranslator implements IPCPacketTransl
         MovePlayerPacket pk = new MovePlayerPacket();
         pk.rtid = entityPlayer.proxyEid;
         pk.mode = mode;
-        pk.position = new Vector3F((float) packet.getX(), (float) packet.getY() + EntityType.PLAYER.getOffset() + offset, (float) packet.getZ());
-        pk.yaw = packet.getYaw();
-        pk.pitch = packet.getPitch();
-        pk.headYaw = packet.getYaw();
+        pk.position = new Vector3F((float) originalPacket.getX(), (float) originalPacket.getY() + EntityType.PLAYER.getOffset() + offset, (float) originalPacket.getZ());
+        pk.yaw = originalPacket.getYaw();
+        pk.pitch = originalPacket.getPitch();
+        pk.headYaw = originalPacket.getYaw();
 
         if (entityPlayer.riding != 0) {
             CachedEntity vehicle = session.getEntityCache().getByLocalEID(entityPlayer.riding);
@@ -245,7 +245,7 @@ public class PCPlayerPositionRotationPacketTranslator implements IPCPacketTransl
         }
 
         // send the confirmation
-        ClientTeleportConfirmPacket confirm = new ClientTeleportConfirmPacket(packet.getTeleportId());
+        ClientTeleportConfirmPacket confirm = new ClientTeleportConfirmPacket(originalPacket.getTeleportId());
         ((PCDownstreamSession) session.getDownstream()).send(confirm);
         
         if(!contains) {

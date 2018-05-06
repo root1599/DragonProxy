@@ -20,9 +20,9 @@ import org.dragonet.protocol.PEPacket;
 
 public class PCSpawnMobPacketTranslator implements IPCPacketTranslator<ServerSpawnMobPacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerSpawnMobPacket packet) {
+    public PEPacket[] translate(UpstreamSession session, ServerSpawnMobPacket originalPacket) {
         try {
-            CachedEntity entity = session.getEntityCache().newEntity(packet);
+            CachedEntity entity = session.getEntityCache().newEntity(originalPacket);
             if (entity == null) {
                 return null;
             }

@@ -15,15 +15,15 @@ import org.dragonet.common.maths.BlockPosition;
 public class PCExplosionTranslator implements IPCPacketTranslator<ServerExplosionPacket> {
 
     @Override
-    public PEPacket[] translate(UpstreamSession session, ServerExplosionPacket packet) {
+    public PEPacket[] translate(UpstreamSession session, ServerExplosionPacket originalPacket) {
 
         ExplodePacket pk = new ExplodePacket();
 
-        pk.position = new Vector3F(packet.getX(), packet.getY(), packet.getZ());
-        pk.radius = packet.getRadius();
-        pk.destroyedBlocks = new ArrayList<>(packet.getExploded().size());
+        pk.position = new Vector3F(originalPacket.getX(), originalPacket.getY(), originalPacket.getZ());
+        pk.radius = originalPacket.getRadius();
+        pk.destroyedBlocks = new ArrayList<>(originalPacket.getExploded().size());
 
-        for (ExplodedBlockRecord record : packet.getExploded())
+        for (ExplodedBlockRecord record : originalPacket.getExploded())
             pk.destroyedBlocks.add(new BlockPosition(record.getX(), record.getY(), record.getZ()));
 
         return new PEPacket[]{pk};

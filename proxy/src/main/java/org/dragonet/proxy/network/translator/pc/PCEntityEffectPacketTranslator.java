@@ -24,18 +24,18 @@ import org.dragonet.protocol.packets.MobEffectPacket;
 
 public class PCEntityEffectPacketTranslator implements IPCPacketTranslator<ServerEntityEffectPacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerEntityEffectPacket packet) {
+    public PEPacket[] translate(UpstreamSession session, ServerEntityEffectPacket originalPacket) {
 
-        CachedEntity entity = session.getEntityCache().getByRemoteEID(packet.getEntityId());
+        CachedEntity entity = session.getEntityCache().getByRemoteEID(originalPacket.getEntityId());
         if (entity == null) {
-            if (packet.getEntityId() == (int) session.getDataCache().get(CacheKey.PLAYER_EID)) {
+            if (originalPacket.getEntityId() == (int) session.getDataCache().get(CacheKey.PLAYER_EID)) {
                 entity = session.getEntityCache().getClientEntity();
             } else {
                 return null;
             }
         }
 
-        int effectId = MagicValues.value(Integer.class, packet.getEffect());
+        int effectId = MagicValues.value(Integer.class, originalPacket.getEffect());
 
         PocketPotionEffect effect = PocketPotionEffect.getByID(effectId);
         if (effect == null) {
@@ -52,9 +52,9 @@ public class PCEntityEffectPacketTranslator implements IPCPacketTranslator<Serve
             eff.eventId = MobEffectPacket.EVENT_ADD;
             entity.effects.add(effectId);
         }
-        eff.amplifier = packet.getAmplifier();
-        eff.duration = packet.getDuration();
-        eff.particles = packet.getShowParticles();
+        eff.amplifier = originalPacket.getAmplifier();
+        eff.duration = originalPacket.getDuration();
+        eff.particles = originalPacket.getShowParticles();
         return new PEPacket[]{eff};
     }
 }

@@ -24,18 +24,18 @@ import org.dragonet.protocol.packets.MoveEntityPacket;
 
 public class PCEntityHeadLookPacketTranslator implements IPCPacketTranslator<ServerEntityHeadLookPacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerEntityHeadLookPacket packet) {
+    public PEPacket[] translate(UpstreamSession session, ServerEntityHeadLookPacket originalPacket) {
 
-        CachedEntity entity = session.getEntityCache().getByRemoteEID(packet.getEntityId());
+        CachedEntity entity = session.getEntityCache().getByRemoteEID(originalPacket.getEntityId());
         if (entity == null) {
-            if (packet.getEntityId() == (int) session.getDataCache().get(CacheKey.PLAYER_EID)) {
+            if (originalPacket.getEntityId() == (int) session.getDataCache().get(CacheKey.PLAYER_EID)) {
                 entity = session.getEntityCache().getClientEntity();
             } else {
                 return null;
             }
         }
 
-        entity.headYaw = packet.getHeadYaw();
+        entity.headYaw = originalPacket.getHeadYaw();
 
         MoveEntityPacket pk = new MoveEntityPacket();
         pk.rtid = entity.proxyEid;

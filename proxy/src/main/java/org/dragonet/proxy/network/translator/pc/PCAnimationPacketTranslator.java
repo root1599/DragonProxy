@@ -21,14 +21,14 @@ import org.dragonet.protocol.packets.AnimatePacket;
 
 public class PCAnimationPacketTranslator implements IPCPacketTranslator<ServerEntityAnimationPacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerEntityAnimationPacket packet) {
+    public PEPacket[] translate(UpstreamSession session, ServerEntityAnimationPacket originalPacket) {
 
-        CachedEntity entity = session.getEntityCache().getByRemoteEID(packet.getEntityId());
+        CachedEntity entity = session.getEntityCache().getByRemoteEID(originalPacket.getEntityId());
         if (entity == null) {
             return null;
         }
         AnimatePacket pk = new AnimatePacket();
-        switch (packet.getAnimation()) {
+        switch (originalPacket.getAnimation()) {
             case CRITICAL_HIT:
                 pk.action = AnimatePacket.ACTION_CRITICAL_HIT;
                 break;

@@ -19,7 +19,7 @@ import org.dragonet.protocol.PEPacket;
 
 public class PCVehicleMovePacketTranslator implements IPCPacketTranslator<ServerVehicleMovePacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerVehicleMovePacket packet) {
+    public PEPacket[] translate(UpstreamSession session, ServerVehicleMovePacket originalPacket) {
 //        System.out.println(DebugTools.getAllFields(packet));
         return new PEPacket[]{};
     }

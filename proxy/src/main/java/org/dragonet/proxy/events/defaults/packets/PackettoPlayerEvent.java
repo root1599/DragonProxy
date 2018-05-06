@@ -1,6 +1,7 @@
 package org.dragonet.proxy.events.defaults.packets;
 
-import org.dragonet.protocol.PEPacket;
+import com.nukkitx.server.network.minecraft.MinecraftPacket;
+import com.nukkitx.server.network.raknet.NetworkPacket;
 import org.dragonet.proxy.events.Cancellable;
 import org.dragonet.proxy.events.HandlerList;
 import org.dragonet.proxy.network.UpstreamSession;
@@ -16,7 +17,7 @@ public class PackettoPlayerEvent extends PEPacketEvent implements Cancellable{
     
     private final UpstreamSession session;
     
-    public PackettoPlayerEvent(UpstreamSession session, PEPacket packet) {
+    public PackettoPlayerEvent(UpstreamSession session, NetworkPacket packet) {
         super(packet);
         this.session = session;
     }

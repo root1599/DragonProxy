@@ -9,8 +9,8 @@ import org.dragonet.protocol.packets.SetDifficultyPacket;
 public class PCSetDifficultyTranslator implements IPCPacketTranslator<ServerDifficultyPacket> {
 
     @Override
-    public PEPacket[] translate(UpstreamSession session, ServerDifficultyPacket packet) {
-        return new PEPacket[]{new SetDifficultyPacket(packet.getDifficulty())};
+    public PEPacket[] translate(UpstreamSession session, ServerDifficultyPacket originalPacket) {
+        return new PEPacket[]{new SetDifficultyPacket(originalPacket.getDifficulty())};
     }
 
 }

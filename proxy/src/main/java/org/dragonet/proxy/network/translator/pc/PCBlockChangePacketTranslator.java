@@ -33,9 +33,9 @@ import org.dragonet.common.maths.Vector3F;
 public class PCBlockChangePacketTranslator implements IPCPacketTranslator<ServerBlockChangePacket> {
 
     @Override
-    public PEPacket[] translate(UpstreamSession session, ServerBlockChangePacket packet) {
-        Position pos = packet.getRecord().getPosition();
-        BlockState block = packet.getRecord().getBlock();
+    public PEPacket[] translate(UpstreamSession session, ServerBlockChangePacket originalPacket) {
+        Position pos = originalPacket.getRecord().getPosition();
+        BlockState block = originalPacket.getRecord().getBlock();
         if (session.getChunkCache().getBlock(pos) != null) {
             if (block.getId() == 0 && session.getChunkCache().getBlock(pos).getId() != 0) {
                 LevelEventPacket pk = new LevelEventPacket();

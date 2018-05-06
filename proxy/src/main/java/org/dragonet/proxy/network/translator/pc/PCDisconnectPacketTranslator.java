@@ -9,8 +9,8 @@ import com.github.steveice10.mc.protocol.packet.ingame.server.ServerDisconnectPa
 public class PCDisconnectPacketTranslator implements IPCPacketTranslator<ServerDisconnectPacket> {
 
     @Override
-    public PEPacket[] translate(UpstreamSession session, ServerDisconnectPacket packet) {
-        session.disconnect(packet.getReason().getFullText());
+    public PEPacket[] translate(UpstreamSession session, ServerDisconnectPacket originalPacket) {
+        session.disconnect(originalPacket.getReason().getFullText());
         return null;
     }
 

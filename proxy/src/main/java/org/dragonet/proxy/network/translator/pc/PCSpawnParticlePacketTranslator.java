@@ -20,13 +20,13 @@ import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerSpawnP
 public class PCSpawnParticlePacketTranslator implements IPCPacketTranslator<ServerSpawnParticlePacket> {
 
     @Override
-    public PEPacket[] translate(UpstreamSession session, ServerSpawnParticlePacket packet) {
+    public PEPacket[] translate(UpstreamSession session, ServerSpawnParticlePacket originalPacket) {
         ArrayList<PEPacket> packets = new ArrayList<PEPacket>();
-        if (packet.getParticle() == Particle.BLOCK_CRACK || packet.getParticle() == Particle.BLOCK_DUST) {
+        if (originalPacket.getParticle() == Particle.BLOCK_CRACK || originalPacket.getParticle() == Particle.BLOCK_DUST) {
             LevelEventPacket pk = new LevelEventPacket();
             pk.eventId = LevelEventPacket.EVENT_PARTICLE_DESTROY;
-            pk.position = new Vector3F(packet.getX(), packet.getY(), packet.getZ());
-            Position pos = new Position((int) packet.getX(), (int) packet.getY(), (int) packet.getZ());
+            pk.position = new Vector3F(originalPacket.getX(), originalPacket.getY(), originalPacket.getZ());
+            Position pos = new Position((int) originalPacket.getX(), (int) originalPacket.getY(), (int) originalPacket.getZ());
             ItemEntry entry = ItemBlockTranslator.translateToPE(session.getChunkCache().getBlock(pos).getId(),
                     session.getChunkCache().getBlock(pos).getData());
             if (session.getChunkCache().getBlock(pos) != null)
@@ -35,13 +35,13 @@ public class PCSpawnParticlePacketTranslator implements IPCPacketTranslator<Serv
                 pk.data = GlobalBlockPalette.getOrCreateRuntimeId(1);
             packets.add(pk);
         } else {
-            int num = ParticleTranslator.getInstance().translate(packet.getParticle());
+            int num = ParticleTranslator.getInstance().translate(originalPacket.getParticle());
             if (num != -1) {
                 Random random = new Random(System.currentTimeMillis());
-                for (int i = 0; i < packet.getAmount(); i++) {
-                    packets.add(getParticle(packet.getX() + (random.nextFloat() * 2 - 1) * packet.getOffsetX(),
-                            packet.getY() + (random.nextFloat() * 2 - 1) * packet.getOffsetY(),
-                            packet.getZ() + (random.nextFloat() * 2 - 1) * packet.getOffsetZ(), num, 0));
+                for (int i = 0; i < originalPacket.getAmount(); i++) {
+                    packets.add(getParticle(originalPacket.getX() + (random.nextFloat() * 2 - 1) * originalPacket.getOffsetX(),
+                            originalPacket.getY() + (random.nextFloat() * 2 - 1) * originalPacket.getOffsetY(),
+                            originalPacket.getZ() + (random.nextFloat() * 2 - 1) * originalPacket.getOffsetZ(), num, 0));
                 }
             }
         }

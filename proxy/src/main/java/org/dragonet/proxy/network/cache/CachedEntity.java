@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import com.nukkitx.server.entity.Attribute;
 import org.dragonet.common.data.entity.EntityType;
 import org.dragonet.common.maths.AxisAlignedBB;
 import org.dragonet.common.maths.Vector3F;
@@ -78,12 +79,12 @@ public class CachedEntity {
 
     // cache riding datas for dismount
     public long riding = 0;
-    public Set<Long> passengers = new HashSet();
+    public Set<Long> passengers = new HashSet<>();
 
     public EntityMetadata[] pcMeta;
     public boolean spawned = false;
-    public final Set<Integer> effects = Collections.synchronizedSet(new HashSet<Integer>());
-    public Map<Integer, PEEntityAttribute> attributes = Collections.synchronizedMap(new HashMap());
+    public final Set<Integer> effects = Collections.synchronizedSet(new HashSet<>());
+    public Map<Integer, Attribute> attributes = Collections.synchronizedMap(new HashMap<>());
 
     public CachedEntity(long eid, long proxyEid, int pcType, EntityType peType, ObjectType objType, boolean player,
             UUID playerUniqueId) {

@@ -32,9 +32,9 @@ import org.dragonet.protocol.packets.SetEntityLinkPacket;
 
 public class PCEntitySetPassengerPacketTranslator implements IPCPacketTranslator<ServerEntitySetPassengersPacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerEntitySetPassengersPacket packet) {
+    public PEPacket[] translate(UpstreamSession session, ServerEntitySetPassengersPacket originalPacket) {
 
-        CachedEntity vehicle = session.getEntityCache().getByRemoteEID(packet.getEntityId());
+        CachedEntity vehicle = session.getEntityCache().getByRemoteEID(originalPacket.getEntityId());
         if (vehicle == null) {
             return null;
         }
@@ -48,7 +48,7 @@ public class PCEntitySetPassengerPacketTranslator implements IPCPacketTranslator
             if (rider == null) {
                 continue;
             }
-            if (!Arrays.asList(packet.getPassengerIds()).contains(rider.eid)) {
+            if (!Arrays.asList(originalPacket.getPassengerIds()).contains(rider.eid)) {
 
                 SetEntityLinkPacket pk = new SetEntityLinkPacket();
                 pk.riding = vehicle.proxyEid;
@@ -66,7 +66,7 @@ public class PCEntitySetPassengerPacketTranslator implements IPCPacketTranslator
 
         //process mount action
         boolean piloteSet = false;
-        for (int id : packet.getPassengerIds()) {
+        for (int id : originalPacket.getPassengerIds()) {
 
             CachedEntity rider = session.getEntityCache().getByRemoteEID(id);
 

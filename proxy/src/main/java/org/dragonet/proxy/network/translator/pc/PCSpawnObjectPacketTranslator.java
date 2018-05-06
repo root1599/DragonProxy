@@ -20,9 +20,9 @@ import org.dragonet.protocol.PEPacket;
 
 public class PCSpawnObjectPacketTranslator implements IPCPacketTranslator<ServerSpawnObjectPacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerSpawnObjectPacket packet) {
-        if (!packet.getType().equals(ObjectType.ITEM_FRAME))
-            session.getEntityCache().newEntity(packet); //Cached for later use in PCEntityMetadataPacketTranslator
+    public PEPacket[] translate(UpstreamSession session, ServerSpawnObjectPacket originalPacket) {
+        if (!originalPacket.getType().equals(ObjectType.ITEM_FRAME))
+            session.getEntityCache().newEntity(originalPacket); //Cached for later use in PCEntityMetadataPacketTranslator
         return null;
     }
 

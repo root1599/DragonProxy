@@ -26,10 +26,10 @@ import org.dragonet.protocol.packets.SetPlayerGameTypePacket;
 
 public class PCNotifyClientPacketTranslator implements IPCPacketTranslator<ServerNotifyClientPacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerNotifyClientPacket packet) {
-        switch (packet.getNotification()) {
+    public PEPacket[] translate(UpstreamSession session, ServerNotifyClientPacket originalPacket) {
+        switch (originalPacket.getNotification()) {
             case CHANGE_GAMEMODE:
-                GameMode gm = (GameMode) packet.getValue();
+                GameMode gm = (GameMode) originalPacket.getValue();
                 SetPlayerGameTypePacket pkgm = new SetPlayerGameTypePacket();
                 pkgm.gamemode = gm == GameMode.CREATIVE ? 1 : 0;
 

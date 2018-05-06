@@ -22,8 +22,8 @@ import org.dragonet.protocol.packets.SpawnExperienceOrb;
 
 public class PCSpawnExpOrbPacketTranslator implements IPCPacketTranslator<ServerSpawnExpOrbPacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerSpawnExpOrbPacket packet) {
-        CachedEntity entity = session.getEntityCache().newEntity(packet);
+    public PEPacket[] translate(UpstreamSession session, ServerSpawnExpOrbPacket originalPacket) {
+        CachedEntity entity = session.getEntityCache().newEntity(originalPacket);
 
         if (entity == null)
             return null;
@@ -31,7 +31,7 @@ public class PCSpawnExpOrbPacketTranslator implements IPCPacketTranslator<Server
         if (session.isSpawned()) {
             SpawnExperienceOrb spawnXpOrb = new SpawnExperienceOrb();
             spawnXpOrb.position = new Vector3F((float) entity.x, (float) entity.y + entity.peType.getOffset(), (float) entity.z);
-            spawnXpOrb.count = packet.getExp();
+            spawnXpOrb.count = originalPacket.getExp();
             entity.spawned = true;
             session.sendPacket(spawnXpOrb);
         }

@@ -1,4 +1,4 @@
 package org.dragonet.api.event;
 
-public class PlayerDisconnectedEvent {
+public class PlayerDisconnectedEvent extends AbstractEvent {
 }

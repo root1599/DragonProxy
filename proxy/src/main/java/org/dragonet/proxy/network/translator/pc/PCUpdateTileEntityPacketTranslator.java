@@ -22,11 +22,11 @@ import org.dragonet.common.maths.BlockPosition;
 
 public class PCUpdateTileEntityPacketTranslator implements IPCPacketTranslator<ServerUpdateTileEntityPacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerUpdateTileEntityPacket packet) {
+    public PEPacket[] translate(UpstreamSession session, ServerUpdateTileEntityPacket originalPacket) {
 
         BlockEntityDataPacket data = new BlockEntityDataPacket();
-        data.blockPosition = new BlockPosition(packet.getPosition());
-        data.tag = ItemBlockTranslator.translateBlockEntityToPE(packet.getNBT());
+        data.blockPosition = new BlockPosition(originalPacket.getPosition());
+        data.tag = ItemBlockTranslator.translateBlockEntityToPE(originalPacket.getNBT());
         return new PEPacket[]{data};
     }
 }

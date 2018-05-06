@@ -27,13 +27,13 @@ import org.dragonet.common.maths.ChunkPos;
 
 public class PCMultiBlockChangePacketTranslator implements IPCPacketTranslator<ServerMultiBlockChangePacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerMultiBlockChangePacket packet) {
-        UpdateBlockPacket[] packets = new UpdateBlockPacket[packet.getRecords().length];
+    public PEPacket[] translate(UpstreamSession session, ServerMultiBlockChangePacket originalPacket) {
+        UpdateBlockPacket[] packets = new UpdateBlockPacket[originalPacket.getRecords().length];
         // int generalFlag = packet.getRecords().length > 64 ?
         // UpdateBlockPacket.FLAG_ALL_PRIORITY : UpdateBlockPacket.FLAG_NEIGHBORS;
         for (int i = 0; i < packets.length; i++) {
-            Position pos = packet.getRecords()[i].getPosition();
-            BlockState block = packet.getRecords()[i].getBlock();
+            Position pos = originalPacket.getRecords()[i].getPosition();
+            BlockState block = originalPacket.getRecords()[i].getBlock();
             try {
                 ChunkPos chunk = new ChunkPos(pos.getX() >> 4, pos.getZ() >> 4);
                 session.getChunkCache().update(pos, block);

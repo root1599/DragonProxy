@@ -19,7 +19,7 @@ import org.dragonet.protocol.PEPacket;
 
 public class PCConfirmTransactionPacketTranslator implements IPCPacketTranslator<ServerConfirmTransactionPacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerConfirmTransactionPacket packet) {
+    public PEPacket[] translate(UpstreamSession session, ServerConfirmTransactionPacket originalPacket) {
         
         return null;
     }

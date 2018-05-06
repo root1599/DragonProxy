@@ -23,18 +23,18 @@ import org.dragonet.protocol.packets.MoveEntityPacket;
 
 public class PCEntityPositionRotationPacketTranslator implements IPCPacketTranslator<ServerEntityPositionRotationPacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerEntityPositionRotationPacket packet) {
+    public PEPacket[] translate(UpstreamSession session, ServerEntityPositionRotationPacket originalPacket) {
 
-        CachedEntity entity = session.getEntityCache().getByRemoteEID(packet.getEntityId());
+        CachedEntity entity = session.getEntityCache().getByRemoteEID(originalPacket.getEntityId());
         if (entity == null) {
-            if (packet.getEntityId() == (int) session.getDataCache().get(CacheKey.PLAYER_EID)) {
+            if (originalPacket.getEntityId() == (int) session.getDataCache().get(CacheKey.PLAYER_EID)) {
                 entity = session.getEntityCache().getClientEntity();
             } else {
                 return null;
             }
         }
 
-        entity.relativeMove(packet.getMovementX(), packet.getMovementY(), packet.getMovementZ(), packet.getYaw(), packet.getPitch());
+        entity.relativeMove(originalPacket.getMovementX(), originalPacket.getMovementY(), originalPacket.getMovementZ(), originalPacket.getYaw(), originalPacket.getPitch());
 
         if (entity.shouldMove) {
             MoveEntityPacket pk = new MoveEntityPacket();
@@ -43,7 +43,7 @@ public class PCEntityPositionRotationPacketTranslator implements IPCPacketTransl
             pk.headYaw = (byte) (entity.headYaw / (360d / 256d));
             pk.pitch = (byte) (entity.pitch / (360d / 256d));
             pk.position = new Vector3F((float) entity.x, (float) entity.y + entity.peType.getOffset(), (float) entity.z);
-            pk.onGround = packet.isOnGround();
+            pk.onGround = originalPacket.isOnGround();
             entity.shouldMove = false;
             return new PEPacket[]{pk};
         }

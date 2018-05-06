@@ -19,7 +19,7 @@ import org.dragonet.protocol.PEPacket;
 
 public class PCBlockValuePacketTranslator implements IPCPacketTranslator<ServerBlockValuePacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerBlockValuePacket packet) {
+    public PEPacket[] translate(UpstreamSession session, ServerBlockValuePacket originalPacket) {
 
 // Used for updating these blocks
 //NOTE_BLOCK = 25; //NoteBlockValue //int pitch

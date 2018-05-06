@@ -22,9 +22,9 @@ import org.dragonet.protocol.type.chunk.ChunkData;
 
 public class PCChunkDataPacketTranslator implements IPCPacketTranslator<ServerChunkDataPacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerChunkDataPacket packet) {
+    public PEPacket[] translate(UpstreamSession session, ServerChunkDataPacket originalPacket) {
         //update cache
-        session.getChunkCache().update(packet.getColumn());
+        session.getChunkCache().update(originalPacket.getColumn());
 
 //        session.getProxy().getGeneralThreadPool().execute(() -> {
 //            try {

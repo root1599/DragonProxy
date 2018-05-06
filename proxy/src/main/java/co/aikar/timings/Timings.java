@@ -28,9 +28,11 @@ import static co.aikar.timings.TimingIdentifier.DEFAULT_GROUP;
 import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
+
+import com.nukkitx.server.network.minecraft.MinecraftPacket;
+import com.nukkitx.server.network.raknet.NetworkPacket;
 import org.dragonet.proxy.DragonProxy;
 import org.dragonet.proxy.commands.Command;
-import org.dragonet.protocol.PEPacket;
 import org.dragonet.proxy.network.translator.IPCPacketTranslator;
 import org.dragonet.proxy.network.translator.IPEPacketTranslator;
 
@@ -221,13 +223,13 @@ public final class Timings {
         return TimingsManager.getTiming(DEFAULT_GROUP.name, "## BlockEntity Tick: " + type, tickBlockEntityTimer);
     }
 //
-    public static Timing getReceiveDataPacketTiming(PEPacket pk) {
+    public static Timing getReceiveDataPacketTiming(NetworkPacket pk) {
         if (!isTimingsEnabled()) return playerNetworkReceiveTimer;
         if (verboseEnabled) DragonProxy.getInstance().getLogger().info("getReceiveDataPacketTiming " + pk.getClass().getSimpleName() + " hit");
         return TimingsManager.getTiming(DEFAULT_GROUP.name, "## Receive Packet: " + pk.getClass().getSimpleName(), playerNetworkReceiveTimer);
     }
 
-    public static Timing getSendDataPacketTiming(PEPacket pk) {
+    public static Timing getSendDataPacketTiming(NetworkPacket pk) {
         if (!isTimingsEnabled()) return playerNetworkSendTimer;
         if (verboseEnabled) DragonProxy.getInstance().getLogger().info("getSendDataPacketTiming " + pk.getClass().getSimpleName() + " hit");
         return TimingsManager.getTiming(DEFAULT_GROUP.name, "## Send Packet: " + pk.getClass().getSimpleName(), playerNetworkSendTimer);

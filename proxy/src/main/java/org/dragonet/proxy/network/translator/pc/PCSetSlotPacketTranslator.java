@@ -21,29 +21,29 @@ import org.dragonet.protocol.PEPacket;
 
 public class PCSetSlotPacketTranslator implements IPCPacketTranslator<ServerSetSlotPacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerSetSlotPacket packet) {
-        if (!session.getWindowCache().hasWindow(packet.getWindowId())) {
+    public PEPacket[] translate(UpstreamSession session, ServerSetSlotPacket originalPacket) {
+        if (!session.getWindowCache().hasWindow(originalPacket.getWindowId())) {
             // Cache this
-            session.getWindowCache().newCachedPacket(packet.getWindowId(), packet);
+            session.getWindowCache().newCachedPacket(originalPacket.getWindowId(), originalPacket);
             return null;
         }
-        CachedWindow win = session.getWindowCache().get(packet.getWindowId());
-        if (win.pcType == null && packet.getWindowId() != 0) {
+        CachedWindow win = session.getWindowCache().get(originalPacket.getWindowId());
+        if (win.pcType == null && originalPacket.getWindowId() != 0) {
             return null;
         }
-        if (packet.getWindowId() == 0) {
-            if (packet.getSlot() >= win.slots.length) {
+        if (originalPacket.getWindowId() == 0) {
+            if (originalPacket.getSlot() >= win.slots.length) {
                 return null;
             }
-            win.slots[packet.getSlot()] = packet.getItem();
+            win.slots[originalPacket.getSlot()] = originalPacket.getItem();
             return InventoryTranslatorRegister.sendPlayerInventory(session); // Too lazy lol
         }
 //        if (packet.getItem() != null)
 //            System.out.println("Caching window " + packet.getWindowId() + " item " + packet.getItem().getId());
         if (win.isOpen)
-            InventoryTranslatorRegister.updateSlot(session, packet);
+            InventoryTranslatorRegister.updateSlot(session, originalPacket);
         else
-            session.getWindowCache().newCachedPacket(packet.getWindowId(), packet);
+            session.getWindowCache().newCachedPacket(originalPacket.getWindowId(), originalPacket);
         return null;
     }
 }

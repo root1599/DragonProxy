@@ -22,10 +22,10 @@ import org.dragonet.common.maths.BlockPosition;
 
 public class PCSpawnPositionPacketTranslator implements IPCPacketTranslator<ServerSpawnPositionPacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerSpawnPositionPacket packet) {
+    public PEPacket[] translate(UpstreamSession session, ServerSpawnPositionPacket originalPacket) {
 
         CachedEntity entity = session.getEntityCache().getClientEntity();
-        entity.spawnPosition = new BlockPosition(packet.getPosition());
+        entity.spawnPosition = new BlockPosition(originalPacket.getPosition());
         SetSpawnPositionPacket pk = new SetSpawnPositionPacket();
         pk.position = entity.spawnPosition;
         return new PEPacket[]{};

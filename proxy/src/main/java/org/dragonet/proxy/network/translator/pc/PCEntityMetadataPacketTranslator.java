@@ -24,10 +24,10 @@ import org.dragonet.protocol.packets.SetEntityDataPacket;
 
 public class PCEntityMetadataPacketTranslator implements IPCPacketTranslator<ServerEntityMetadataPacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerEntityMetadataPacket packet) {
-        CachedEntity entity = session.getEntityCache().getByRemoteEID(packet.getEntityId());
+    public PEPacket[] translate(UpstreamSession session, ServerEntityMetadataPacket originalPacket) {
+        CachedEntity entity = session.getEntityCache().getByRemoteEID(originalPacket.getEntityId());
         if (entity == null) {
-            if (packet.getEntityId() == session.getEntityCache().getClientEntity().eid)
+            if (originalPacket.getEntityId() == session.getEntityCache().getClientEntity().eid)
                 entity = session.getEntityCache().getClientEntity();
             else
                 return null;
@@ -35,11 +35,11 @@ public class PCEntityMetadataPacketTranslator implements IPCPacketTranslator<Ser
 //            return null;
         }
 
-        entity.pcMeta = packet.getMetadata();
+        entity.pcMeta = originalPacket.getMetadata();
         if (entity.spawned) {
             SetEntityDataPacket pk = new SetEntityDataPacket();
             pk.rtid = entity.proxyEid;
-            pk.meta = EntityMetaTranslator.translateToPE(session, packet.getMetadata(), entity.peType);
+            pk.meta = EntityMetaTranslator.translateToPE(session, originalPacket.getMetadata(), entity.peType);
             session.sendPacket(pk);
         } else
             if (entity.peType == EntityType.PLAYER || entity.peType == EntityType.PAINTING) {

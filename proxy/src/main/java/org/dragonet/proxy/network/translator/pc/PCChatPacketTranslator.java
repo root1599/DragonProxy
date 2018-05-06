@@ -33,33 +33,33 @@ public class PCChatPacketTranslator implements IPCPacketTranslator<ServerChatPac
     public static final byte TYPE_WHISPER = 6;
     public static final byte TYPE_ANNOUNCEMENT = 7;
 
-    public PEPacket[] translate(UpstreamSession session, ServerChatPacket packet) {
+    public PEPacket[] translate(UpstreamSession session, ServerChatPacket originalPacket) {
         TextPacket pe = new TextPacket();
 
-        switch (packet.getType()) {
+        switch (originalPacket.getType()) {
             case NOTIFICATION:
-                pe.message = pe.message = MessageTranslator.translate(packet.getMessage());
+                pe.message = pe.message = MessageTranslator.translate(originalPacket.getMessage());
                 pe.type = TYPE_POPUP;
                 break;
             case CHAT:
-                if (packet.getMessage() instanceof TranslationMessage) {
+                if (originalPacket.getMessage() instanceof TranslationMessage) {
                     pe.type = TYPE_TRANSLATION;
                     pe.needsTranslation = true;
-                    pe.message = MessageTranslator.translationTranslateText((TranslationMessage) packet.getMessage());
-                    pe.params = MessageTranslator.translationTranslateParams(((TranslationMessage) packet.getMessage()).getTranslationParams());
+                    pe.message = MessageTranslator.translationTranslateText((TranslationMessage) originalPacket.getMessage());
+                    pe.params = MessageTranslator.translationTranslateParams(((TranslationMessage) originalPacket.getMessage()).getTranslationParams());
                 } else {
-                    pe.message = pe.message = MessageTranslator.translate(packet.getMessage());
+                    pe.message = pe.message = MessageTranslator.translate(originalPacket.getMessage());
                     pe.type = TYPE_RAW;
                 }
                 break;
             case SYSTEM:
-                if (packet.getMessage() instanceof TranslationMessage) {
+                if (originalPacket.getMessage() instanceof TranslationMessage) {
                     pe.type = TYPE_TRANSLATION;
                     pe.needsTranslation = true;
-                    pe.message = MessageTranslator.translationTranslateText((TranslationMessage) packet.getMessage());
-                    pe.params = MessageTranslator.translationTranslateParams(((TranslationMessage) packet.getMessage()).getTranslationParams());
+                    pe.message = MessageTranslator.translationTranslateText((TranslationMessage) originalPacket.getMessage());
+                    pe.params = MessageTranslator.translationTranslateParams(((TranslationMessage) originalPacket.getMessage()).getTranslationParams());
                 } else {
-                    pe.message = pe.message = MessageTranslator.translate(packet.getMessage());
+                    pe.message = pe.message = MessageTranslator.translate(originalPacket.getMessage());
                     pe.type = TYPE_RAW;
                 }
                 break;

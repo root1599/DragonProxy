@@ -22,12 +22,12 @@ import org.dragonet.protocol.packets.UpdateAttributesPacket;
 
 public class PCSetExperiencePacketTranslator implements IPCPacketTranslator<ServerPlayerSetExperiencePacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerPlayerSetExperiencePacket packet) {
+    public PEPacket[] translate(UpstreamSession session, ServerPlayerSetExperiencePacket originalPacket) {
 
         CachedEntity peSelfPlayer = session.getEntityCache().getClientEntity();
 
-        peSelfPlayer.attributes.put(PEEntityAttribute.EXPERIENCE_LEVEL, PEEntityAttribute.findAttribute(PEEntityAttribute.EXPERIENCE_LEVEL).setValue(packet.getLevel()));
-        peSelfPlayer.attributes.put(PEEntityAttribute.EXPERIENCE, PEEntityAttribute.findAttribute(PEEntityAttribute.EXPERIENCE).setValue(packet.getSlot()));
+        peSelfPlayer.attributes.put(PEEntityAttribute.EXPERIENCE_LEVEL, PEEntityAttribute.findAttribute(PEEntityAttribute.EXPERIENCE_LEVEL).setValue(originalPacket.getLevel()));
+        peSelfPlayer.attributes.put(PEEntityAttribute.EXPERIENCE, PEEntityAttribute.findAttribute(PEEntityAttribute.EXPERIENCE).setValue(originalPacket.getSlot()));
 
         UpdateAttributesPacket pk = new UpdateAttributesPacket();
         pk.rtid = peSelfPlayer.proxyEid;

@@ -1,21 +1,22 @@
 package org.dragonet.proxy.events.defaults.packets;
 
-import org.dragonet.protocol.PEPacket;
+import com.nukkitx.server.network.minecraft.MinecraftPacket;
+import com.nukkitx.server.network.raknet.NetworkPacket;
 import org.dragonet.proxy.events.Event;
 
 public abstract class PEPacketEvent extends Event {
 
-    private PEPacket packet;
+    private NetworkPacket packet;
 
-    public PEPacketEvent(PEPacket packet) {
+    public PEPacketEvent(NetworkPacket packet) {
         this.packet = packet;
     }
 
-    public PEPacket getPacket() {
+    public NetworkPacket getPacket() {
         return packet;
     }
 
-    public void setPacket(PEPacket packet) {
+    public void setPacket(NetworkPacket packet) {
         this.packet = packet;
     }
 

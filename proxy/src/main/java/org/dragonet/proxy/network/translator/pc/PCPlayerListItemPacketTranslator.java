@@ -27,10 +27,10 @@ import org.dragonet.common.data.entity.Skin;
 
 public class PCPlayerListItemPacketTranslator implements IPCPacketTranslator<ServerPlayerListEntryPacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerPlayerListEntryPacket packet) {
+    public PEPacket[] translate(UpstreamSession session, ServerPlayerListEntryPacket originalPacket) {
         PlayerListPacket pk = new PlayerListPacket();
-        if (packet.getAction() == PlayerListEntryAction.ADD_PLAYER) {
-            PlayerListEntry[] entries = packet.getEntries();
+        if (originalPacket.getAction() == PlayerListEntryAction.ADD_PLAYER) {
+            PlayerListEntry[] entries = originalPacket.getEntries();
             Set<org.dragonet.protocol.type.PlayerListEntry> peEntries = new HashSet();
             for (PlayerListEntry entry : entries) {
                 session.getPlayerInfoCache().put(entry.getProfile().getId(), entry);
@@ -44,8 +44,8 @@ public class PCPlayerListItemPacketTranslator implements IPCPacketTranslator<Ser
             }
             pk.type = PlayerListPacket.TYPE_ADD;
             pk.entries = (org.dragonet.protocol.type.PlayerListEntry[]) peEntries.toArray(new org.dragonet.protocol.type.PlayerListEntry[peEntries.size()]);
-        } else if (packet.getAction() == PlayerListEntryAction.REMOVE_PLAYER) {
-            PlayerListEntry[] entries = packet.getEntries();
+        } else if (originalPacket.getAction() == PlayerListEntryAction.REMOVE_PLAYER) {
+            PlayerListEntry[] entries = originalPacket.getEntries();
             Set<org.dragonet.protocol.type.PlayerListEntry> peEntries = new HashSet();
             for (PlayerListEntry entry : entries) {
                 session.getPlayerInfoCache().remove(entry.getProfile().getId());

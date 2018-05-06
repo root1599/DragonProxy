@@ -28,19 +28,19 @@ import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerPlayEf
 public class PCPlayEffectPacketTranslator implements IPCPacketTranslator<ServerPlayEffectPacket> {
 
 	@Override
-	public PEPacket[] translate(UpstreamSession session, ServerPlayEffectPacket packet) {
-		WorldEffect effect = packet.getEffect();
-		WorldEffectData data = packet.getData();
+	public PEPacket[] translate(UpstreamSession session, ServerPlayEffectPacket originalPacket) {
+		WorldEffect effect = originalPacket.getEffect();
+		WorldEffectData data = originalPacket.getData();
 		ArrayList<PEPacket> packets = new ArrayList<PEPacket>();
 		if(effect == SoundEffect.RECORD && data instanceof RecordEffectData) {
 			if(records.containsKey(((RecordEffectData) data).getRecordId())) {
 				PlaySoundPacket psp = new PlaySoundPacket();
 				psp.name = DragonProxy.getInstance().getSoundTranslator().translate(records.get(((RecordEffectData) data).getRecordId()));
-				psp.blockPosition = new BlockPosition(packet.getPosition());
+				psp.blockPosition = new BlockPosition(originalPacket.getPosition());
 				psp.pitch = 1;
 				psp.volume = 10;
 				packets.add(psp);
-				session.getJukeboxCache().registerJukebox(new BlockPosition(packet.getPosition()), records.get(((RecordEffectData) data).getRecordId()));
+				session.getJukeboxCache().registerJukebox(new BlockPosition(originalPacket.getPosition()), records.get(((RecordEffectData) data).getRecordId()));
 				if(record_names.containsKey(((RecordEffectData) data).getRecordId())) {
 					TextPacket text = new TextPacket();
 					text.type = TextPacket.TYPE_JUKEBOX_POPUP;
@@ -48,7 +48,7 @@ public class PCPlayEffectPacketTranslator implements IPCPacketTranslator<ServerP
 					packets.add(text);
 				}
 			} else if (((RecordEffectData) data).getRecordId() == 0) {
-				BuiltinSound sound = session.getJukeboxCache().unregisterJukebox(new BlockPosition(packet.getPosition()));
+				BuiltinSound sound = session.getJukeboxCache().unregisterJukebox(new BlockPosition(originalPacket.getPosition()));
 				if(sound != null) {
 					StopSoundPacket ssp = new StopSoundPacket();
 					ssp.name = DragonProxy.getInstance().getSoundTranslator().translate(sound);
@@ -65,7 +65,7 @@ public class PCPlayEffectPacketTranslator implements IPCPacketTranslator<ServerP
 			} else {
 				psp.name = DragonProxy.getInstance().getSoundTranslator().translate(breakBlock.get(1));
 			}
-			psp.blockPosition = new BlockPosition(packet.getPosition());
+			psp.blockPosition = new BlockPosition(originalPacket.getPosition());
 			psp.pitch = 1;
 			psp.volume = 10;
 			packets.add(psp);
@@ -75,7 +75,7 @@ public class PCPlayEffectPacketTranslator implements IPCPacketTranslator<ServerP
 			if(!DragonProxy.getInstance().getSoundTranslator().isIgnored(sounds.get(effect)) && DragonProxy.getInstance().getSoundTranslator().isTranslatable(sounds.get(effect))) {
 				PlaySoundPacket psp = new PlaySoundPacket();
 				psp.name = DragonProxy.getInstance().getSoundTranslator().translate(sounds.get(effect));
-				psp.blockPosition = new BlockPosition(packet.getPosition());
+				psp.blockPosition = new BlockPosition(originalPacket.getPosition());
 				psp.pitch = 1;
 				psp.volume = 1;
 				packets.add(psp);
@@ -84,14 +84,14 @@ public class PCPlayEffectPacketTranslator implements IPCPacketTranslator<ServerP
 		if (effect == ParticleEffect.SMOKE) {
 			LevelEventPacket pk = new LevelEventPacket();
 			pk.eventId = LevelEventPacket.EVENT_ADD_PARTICLE_MASK;
-			pk.position = new Vector3F(packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ());
+			pk.position = new Vector3F(originalPacket.getPosition().getX(), originalPacket.getPosition().getY(), originalPacket.getPosition().getZ());
 			pk.data = ParticleEffects.TYPE_SMOKE.id;
 			packets.add(pk);
 		}
 		if (effect == ParticleEffect.BONEMEAL_GROW) {
 			LevelEventPacket pk = new LevelEventPacket();
 			pk.eventId = LevelEventPacket.EVENT_PARTICLE_BONEMEAL;
-			pk.position = new Vector3F(packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ());
+			pk.position = new Vector3F(originalPacket.getPosition().getX(), originalPacket.getPosition().getY(), originalPacket.getPosition().getZ());
 			pk.data = 0;
 			packets.add(pk);
 		}
@@ -101,14 +101,14 @@ public class PCPlayEffectPacketTranslator implements IPCPacketTranslator<ServerP
 		if (effect == ParticleEffect.BREAK_EYE_OF_ENDER) {
 			LevelEventPacket pk = new LevelEventPacket();
 			pk.eventId = LevelEventPacket.EVENT_PARTICLE_EYE_DESPAWN;
-			pk.position = new Vector3F(packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ());
+			pk.position = new Vector3F(originalPacket.getPosition().getX(), originalPacket.getPosition().getY(), originalPacket.getPosition().getZ());
 			pk.data = 0;
 			packets.add(pk);
 		}
 		if (effect == ParticleEffect.BREAK_SPLASH_POTION) {
 			LevelEventPacket pk = new LevelEventPacket();
 			pk.eventId = LevelEventPacket.EVENT_PARTICLE_SPLASH;
-			pk.position = new Vector3F(packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ());
+			pk.position = new Vector3F(originalPacket.getPosition().getX(), originalPacket.getPosition().getY(), originalPacket.getPosition().getZ());
 			pk.data = 0; // TODO
 			packets.add(pk);
 		}
@@ -121,7 +121,7 @@ public class PCPlayEffectPacketTranslator implements IPCPacketTranslator<ServerP
 		if (effect == ParticleEffect.MOB_SPAWN) {
 			LevelEventPacket pk = new LevelEventPacket();
 			pk.eventId = LevelEventPacket.EVENT_PARTICLE_SPAWN;
-			pk.position = new Vector3F(packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ());
+			pk.position = new Vector3F(originalPacket.getPosition().getX(), originalPacket.getPosition().getY(), originalPacket.getPosition().getZ());
 			pk.data = 2;
 			packets.add(pk);
 		}

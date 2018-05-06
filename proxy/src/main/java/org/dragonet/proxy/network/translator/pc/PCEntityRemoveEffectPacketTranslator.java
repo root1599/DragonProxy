@@ -23,18 +23,18 @@ import org.dragonet.protocol.packets.MobEffectPacket;
 
 public class PCEntityRemoveEffectPacketTranslator implements IPCPacketTranslator<ServerEntityRemoveEffectPacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerEntityRemoveEffectPacket packet) {
+    public PEPacket[] translate(UpstreamSession session, ServerEntityRemoveEffectPacket originalPacket) {
 
-        CachedEntity entity = session.getEntityCache().getByRemoteEID(packet.getEntityId());
+        CachedEntity entity = session.getEntityCache().getByRemoteEID(originalPacket.getEntityId());
         if (entity == null) {
-            if (packet.getEntityId() == (int) session.getDataCache().get(CacheKey.PLAYER_EID)) {
+            if (originalPacket.getEntityId() == (int) session.getDataCache().get(CacheKey.PLAYER_EID)) {
                 entity = session.getEntityCache().getClientEntity();
             } else {
                 return null;
             }
         }
 
-        int effectId = MagicValues.value(Integer.class, packet.getEffect());
+        int effectId = MagicValues.value(Integer.class, originalPacket.getEffect());
         if (!entity.effects.contains(effectId)) {
             return null;
         }

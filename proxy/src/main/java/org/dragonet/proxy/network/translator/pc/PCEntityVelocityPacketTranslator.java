@@ -24,24 +24,24 @@ import org.dragonet.protocol.packets.SetEntityMotionPacket;
 
 public class PCEntityVelocityPacketTranslator implements IPCPacketTranslator<ServerEntityVelocityPacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerEntityVelocityPacket packet) {
+    public PEPacket[] translate(UpstreamSession session, ServerEntityVelocityPacket originalPacket) {
 
-        CachedEntity entity = session.getEntityCache().getByRemoteEID(packet.getEntityId());
+        CachedEntity entity = session.getEntityCache().getByRemoteEID(originalPacket.getEntityId());
         if (entity == null) {
-            if (packet.getEntityId() == (int) session.getDataCache().get(CacheKey.PLAYER_EID)) {
+            if (originalPacket.getEntityId() == (int) session.getDataCache().get(CacheKey.PLAYER_EID)) {
                 entity = session.getEntityCache().getClientEntity();
             } else {
                 return null;
             }
         }
 
-        entity.motionX = packet.getMotionX();
-        entity.motionY = packet.getMotionY();
-        entity.motionZ = packet.getMotionZ();
+        entity.motionX = originalPacket.getMotionX();
+        entity.motionY = originalPacket.getMotionY();
+        entity.motionZ = originalPacket.getMotionZ();
 
         SetEntityMotionPacket pk = new SetEntityMotionPacket();
         pk.rtid = entity.proxyEid;
-        pk.motion = new Vector3F((float) packet.getMotionX(), (float) packet.getMotionY(), (float) packet.getMotionZ());
+        pk.motion = new Vector3F((float) originalPacket.getMotionX(), (float) originalPacket.getMotionY(), (float) originalPacket.getMotionZ());
         return new PEPacket[]{pk};
     }
 }

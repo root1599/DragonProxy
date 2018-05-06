@@ -20,12 +20,12 @@ import org.dragonet.protocol.PEPacket;
 
 public class PCJoinGamePacketTranslator implements IPCPacketTranslator<ServerJoinGamePacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerJoinGamePacket packet) {
-        session.getDataCache().put(CacheKey.PLAYER_EID, packet.getEntityId()); // Stores the real entity ID
-        session.getEntityCache().updateClientEntity(packet);
+    public PEPacket[] translate(UpstreamSession session, ServerJoinGamePacket originalPacket) {
+        session.getDataCache().put(CacheKey.PLAYER_EID, originalPacket.getEntityId()); // Stores the real entity ID
+        session.getEntityCache().updateClientEntity(originalPacket);
 
         // This packet is not fully useable, we cache it for now.
-        session.getDataCache().put(CacheKey.PACKET_JOIN_GAME_PACKET, packet);
+        session.getDataCache().put(CacheKey.PACKET_JOIN_GAME_PACKET, originalPacket);
         return null;
     }
 }

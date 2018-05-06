@@ -19,7 +19,7 @@ import org.dragonet.protocol.PEPacket;
 
 public class PCBlockBreakAnimationPacketTranslator implements IPCPacketTranslator<ServerBlockBreakAnimPacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerBlockBreakAnimPacket packet) {
+    public PEPacket[] translate(UpstreamSession session, ServerBlockBreakAnimPacket originalPacket) {
 
 //        LevelEventPacket pk = new LevelEventPacket();
 //        pk.eventId = LevelEventPacket.EVENT_BLOCK_START_BREAK;

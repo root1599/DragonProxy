@@ -31,12 +31,12 @@ import org.dragonet.proxy.DragonProxy;
 
 public class PCRespawnPacketTranslator implements IPCPacketTranslator<ServerRespawnPacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerRespawnPacket packet) {
+    public PEPacket[] translate(UpstreamSession session, ServerRespawnPacket originalPacket) {
 
         CachedEntity entity = session.getEntityCache().getClientEntity();
-        if (entity.dimention != packet.getDimension()) {
+        if (entity.dimention != originalPacket.getDimension()) {
             // the player have changed dimention
-            DragonProxy.getInstance().getLogger().info(session.getUsername() + " change dim " + entity.dimention + " to " + packet.getDimension());
+            DragonProxy.getInstance().getLogger().info(session.getUsername() + " change dim " + entity.dimention + " to " + originalPacket.getDimension());
 //            entity.dimention = packet.getDimension();
 
             // purge and despawn
@@ -45,16 +45,16 @@ public class PCRespawnPacketTranslator implements IPCPacketTranslator<ServerResp
 
             // send new world gamemode
             SetPlayerGameTypePacket pkgm = new SetPlayerGameTypePacket();
-            pkgm.gamemode = packet.getGameMode() == GameMode.CREATIVE ? 1 : 0;
+            pkgm.gamemode = originalPacket.getGameMode() == GameMode.CREATIVE ? 1 : 0;
             session.sendPacket(pkgm);
 
             // send new adventure settings
             AdventureSettingsPacket adv = new AdventureSettingsPacket();
-            adv.setFlag(AdventureSettingsPacket.WORLD_IMMUTABLE, packet.getGameMode().equals(GameMode.ADVENTURE));
-            adv.setFlag(AdventureSettingsPacket.ALLOW_FLIGHT, packet.getGameMode().equals(GameMode.CREATIVE) || packet.getGameMode().equals(GameMode.SPECTATOR));
-            adv.setFlag(AdventureSettingsPacket.NO_CLIP, packet.getGameMode().equals(GameMode.SPECTATOR));
-            adv.setFlag(AdventureSettingsPacket.WORLD_BUILDER, !packet.getGameMode().equals(GameMode.SPECTATOR) || !packet.getGameMode().equals(GameMode.ADVENTURE));
-            adv.setFlag(AdventureSettingsPacket.FLYING, packet.getGameMode().equals(GameMode.SPECTATOR));
+            adv.setFlag(AdventureSettingsPacket.WORLD_IMMUTABLE, originalPacket.getGameMode().equals(GameMode.ADVENTURE));
+            adv.setFlag(AdventureSettingsPacket.ALLOW_FLIGHT, originalPacket.getGameMode().equals(GameMode.CREATIVE) || originalPacket.getGameMode().equals(GameMode.SPECTATOR));
+            adv.setFlag(AdventureSettingsPacket.NO_CLIP, originalPacket.getGameMode().equals(GameMode.SPECTATOR));
+            adv.setFlag(AdventureSettingsPacket.WORLD_BUILDER, !originalPacket.getGameMode().equals(GameMode.SPECTATOR) || !originalPacket.getGameMode().equals(GameMode.ADVENTURE));
+            adv.setFlag(AdventureSettingsPacket.FLYING, originalPacket.getGameMode().equals(GameMode.SPECTATOR));
             adv.setFlag(AdventureSettingsPacket.MUTED, false);
             adv.eid = entity.proxyEid;
             adv.commandsPermission = AdventureSettingsPacket.PERMISSION_NORMAL;
@@ -72,9 +72,9 @@ public class PCRespawnPacketTranslator implements IPCPacketTranslator<ServerResp
             session.sendPacket(attr);
 
             //set world difficulty
-            session.sendPacket(new SetDifficultyPacket(packet.getDifficulty()));
+            session.sendPacket(new SetDifficultyPacket(originalPacket.getDifficulty()));
 
-            if (packet.getGameMode().equals(GameMode.CREATIVE))
+            if (originalPacket.getGameMode().equals(GameMode.CREATIVE))
                 session.sendCreativeInventory();
 
             // change dim packet

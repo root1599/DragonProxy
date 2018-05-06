@@ -14,14 +14,29 @@ package org.dragonet.proxy.network;
 
 import co.aikar.timings.Timing;
 import co.aikar.timings.Timings;
+import com.flowpowered.math.vector.Vector3i;
 import com.github.steveice10.mc.auth.exception.request.RequestException;
 import com.github.steveice10.mc.auth.service.AuthenticationService;
 import com.github.steveice10.mc.protocol.MinecraftProtocol;
 import com.github.steveice10.mc.protocol.data.game.PlayerListEntry;
 import com.github.steveice10.mc.protocol.data.game.setting.Difficulty;
+import com.google.common.base.Preconditions;
+import com.nukkitx.api.message.RawMessage;
+import com.nukkitx.server.network.minecraft.MinecraftPacket;
+import com.nukkitx.server.network.minecraft.packet.*;
+import com.nukkitx.server.network.minecraft.wrapper.DefaultWrapperHandler;
+import com.nukkitx.server.network.raknet.NetworkPacket;
 import com.whirvis.jraknet.protocol.Reliability;
 import com.whirvis.jraknet.session.RakNetClientSession;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.PooledByteBufAllocator;
+import org.dragonet.common.data.blocks.BlockEnum;
+import org.dragonet.common.data.entity.EntityType;
+import org.dragonet.common.data.inventory.ContainerId;
+import org.dragonet.common.data.inventory.Slot;
+import org.dragonet.common.maths.BlockPosition;
 import org.dragonet.common.maths.Vector3F;
+import org.dragonet.common.utilities.LoginChainDecoder;
 import org.dragonet.proxy.DragonProxy;
 import org.dragonet.proxy.configuration.Lang;
 import org.dragonet.proxy.events.defaults.packets.PackettoPlayerEvent;
@@ -29,47 +44,16 @@ import org.dragonet.proxy.events.defaults.player.PlayerAuthenticationEvent;
 import org.dragonet.proxy.events.defaults.player.PlayerKickEvent;
 import org.dragonet.proxy.events.defaults.player.PlayerLoginEvent;
 import org.dragonet.proxy.events.defaults.player.PlayerQuitEvent;
-import org.dragonet.proxy.utilities.CLSAuthenticationService;
-
-import org.dragonet.common.data.entity.EntityType;
+import org.dragonet.proxy.network.cache.ChunkCache;
 import org.dragonet.proxy.network.cache.EntityCache;
 import org.dragonet.proxy.network.cache.JukeboxCache;
 import org.dragonet.proxy.network.cache.WindowCache;
-import org.dragonet.protocol.PEPacket;
-import org.dragonet.protocol.ProtocolInfo;
-import org.dragonet.protocol.packets.DisconnectPacket;
-import org.dragonet.protocol.packets.FullChunkDataPacket;
-import org.dragonet.protocol.packets.LoginPacket;
-import org.dragonet.protocol.packets.PlayStatusPacket;
-import org.dragonet.protocol.packets.ResourcePackStackPacket;
-import org.dragonet.protocol.packets.ResourcePacksInfoPacket;
-import org.dragonet.protocol.packets.SetSpawnPositionPacket;
-import org.dragonet.protocol.packets.StartGamePacket;
-import org.dragonet.protocol.packets.TextPacket;
-import org.dragonet.protocol.packets.UpdateBlockPacket;
-import org.dragonet.protocol.type.chunk.ChunkData;
-import org.dragonet.protocol.type.chunk.Section;
-import org.dragonet.common.utilities.Binary;
-import org.dragonet.common.maths.BlockPosition;
-import org.dragonet.common.utilities.LoginChainDecoder;
-import org.dragonet.common.utilities.Zlib;
+import org.dragonet.proxy.utilities.CLSAuthenticationService;
 
 import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Queue;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.zip.Deflater;
-import org.dragonet.common.data.blocks.BlockEnum;
-import org.dragonet.common.data.inventory.ContainerId;
-import org.dragonet.common.data.inventory.Slot;
-import org.dragonet.protocol.packets.BatchPacket;
-import org.dragonet.protocol.packets.InventoryContentPacket;
-import org.dragonet.proxy.network.cache.ChunkCache;
 
 /**
  * Maintaince the connection between the proxy and Minecraft: Pocket Edition
@@ -83,7 +67,7 @@ public class UpstreamSession {
     private boolean loggedIn = false;
     private boolean spawned = false;
     private boolean connecting = false;
-    private Queue<PEPacket> cachedPackets = new ConcurrentLinkedQueue();
+    private Queue<NetworkPacket> cachedPackets = new ConcurrentLinkedQueue<>();
     private final InetSocketAddress remoteAddress;
     private final PEPacketProcessor packetProcessor;
     private LoginChainDecoder profile;
@@ -104,7 +88,7 @@ public class UpstreamSession {
     private final JukeboxCache jukeboxCache = new JukeboxCache();
 
     public UpstreamSession(DragonProxy proxy, String raknetID, RakNetClientSession raknetClient,
-            InetSocketAddress remoteAddress) {
+                           InetSocketAddress remoteAddress) {
         this.proxy = proxy;
         this.raknetID = raknetID;
         this.remoteAddress = remoteAddress;
@@ -175,66 +159,74 @@ public class UpstreamSession {
     public MinecraftProtocol getProtocol() {
         return protocol;
     }
-    
+
     public JukeboxCache getJukeboxCache() {
-    	return jukeboxCache;
+        return jukeboxCache;
     }
 
-    public void sendPacket(PEPacket packet) {
+    public void sendPacket(NetworkPacket packet) {
         sendPacket(packet, false);
     }
 
-    //if sending a packer before spawn, you should set high_priority to true !
-    public void sendPacket(PEPacket packet, boolean high_priority) {
-        if (packet == null)
-            return;
+    // If sending a packer before spawn, you should set highPriority to true!
+    public void sendPacket(NetworkPacket packet, boolean highPriority) {
+        Preconditions.checkNotNull(packet);
 
-        if(!proxy.getConfig().disable_packet_events){
+        if (!proxy.getConfig().disable_packet_events) {
             PackettoPlayerEvent packetEvent = new PackettoPlayerEvent(this, packet);
             proxy.getEventManager().callEvent(packetEvent);
             packet = packetEvent.getPacket();
         }
 
-        //cache in case of not spawned and no high priority
-        if (!spawned && !high_priority) {
+        // Cache in case of not spawned and no high priority
+        if (!spawned && !highPriority) {
             putCachePacket(packet);
             return;
         }
 
-        while (!cachedPackets.isEmpty())
-            sendPacket(cachedPackets.poll(), true); //TODO sendAllPackets
+        while (!cachedPackets.isEmpty()) {
+            sendPacket(cachedPackets.poll(), true); // TODO: sendAllPackets
+        }
 
         try (Timing timing = Timings.getSendDataPacketTiming(packet)) {
 
-            packet.encode();
+            ByteBuf dataToSend = PooledByteBufAllocator.DEFAULT.directBuffer();
+            dataToSend.writeByte((0xFE & 0xFF));
 
-            byte[] buffer;
+            ByteBuf compressed;
             try {
-                buffer = Zlib.deflate(Binary.appendBytes(Binary.writeUnsignedVarInt(packet.getBuffer().length), packet.getBuffer()), Deflater.BEST_COMPRESSION);
+                if (packet instanceof WrappedPacket) {
+                    WrappedPacket wrapped = (WrappedPacket) packet;
+                    if (wrapped.getPayload() == null) {
+                        compressed = DefaultWrapperHandler.DEFAULT.compressPackets(wrapped.getPackets());
+                    } else {
+                        compressed = wrapped.getPayload();
+                    }
+                } else {
+                    compressed = DefaultWrapperHandler.DEFAULT.compressPackets((MinecraftPacket) packet);
+                }
             } catch (Exception e) {
                 timing.stopTiming();
                 e.printStackTrace();
                 return;
             }
-            raknetClient.sendMessage(Reliability.RELIABLE_ORDERED, 0, new com.whirvis.jraknet.Packet(Binary.appendBytes((byte) 0xfe, buffer)));
+
+            compressed.readerIndex(0);
+            dataToSend.writeBytes(compressed);
+            compressed.release();
+
+            raknetClient.sendMessage(Reliability.RELIABLE_ORDERED, 0, new com.whirvis.jraknet.Packet(dataToSend));
         }
     }
 
-    public void sendAllPackets(PEPacket[] packets, boolean high_priority) {
-        if (packets.length < 5 || true) //<- this disable batched packets
-            for (PEPacket packet : packets)
-                sendPacket(packet, high_priority);
-        else {
-            BatchPacket batchPacket = new BatchPacket();
-//            System.out.println("BatchPacket :");
-            for (PEPacket packet : packets)
-//                System.out.println(" - " + packet.getClass().getSimpleName());
-                if (high_priority) {
-                    batchPacket.packets.add(packet);
-                    break;
-                }
-            sendPacket(batchPacket, high_priority);
+    public void sendAllPackets(Collection<MinecraftPacket> packets, boolean highPriority) {
+        if (packets.size() > 5) {
+            WrappedPacket wrappedPacket = new WrappedPacket();
+            wrappedPacket.getPackets().addAll(packets);
+            sendPacket(wrappedPacket, highPriority);
+            return;
         }
+        packets.forEach(packet -> sendPacket(packet, highPriority));
     }
 
     public void connectToServer(String address, int port) {
@@ -264,8 +256,11 @@ public class UpstreamSession {
         PlayerKickEvent kickEvent = new PlayerKickEvent(this);
         proxy.getEventManager().callEvent(kickEvent);
         if (!connecting) {
-            if(kickEvent.isCancelled​())return; //not cancellable for pre pre login phase
-            sendPacket(new DisconnectPacket(false, reason), true);
+            if (kickEvent.isCancelled​()) return; //not cancellable for pre pre login phase
+            DisconnectPacket disconnectPacket = new DisconnectPacket();
+            disconnectPacket.setDisconnectScreenHidden(false);
+            disconnectPacket.setKickMessage(reason);
+            sendPacket(disconnectPacket, true);
             raknetClient.update(); //Force the DisconnectPacket to be sent before we close the connection
         }
     }
@@ -280,7 +275,7 @@ public class UpstreamSession {
         proxy.getEventManager().callEvent(playerQuit);
 
         proxy.getLogger().info(proxy.getLang().get(Lang.CLIENT_DISCONNECTED,
-                proxy.getAuthMode().equals("cls") ? "unknown" : username, remoteAddress, reason));
+            proxy.getAuthMode().equals("cls") ? "unknown" : username, remoteAddress, reason));
         if (downstream != null)
             downstream.disconnect();
         proxy.getSessionRegister().removeSession(this);
@@ -328,9 +323,9 @@ public class UpstreamSession {
         getDataCache().put(CacheKey.PACKET_LOGIN_PACKET, packet);
 
         PlayStatusPacket status = new PlayStatusPacket();
-        proxy.getLogger().debug("CLIENT PROTOCOL = " + packet.protocol);
-        if (packet.protocol != ProtocolInfo.CURRENT_PROTOCOL) {
-            status.status = PlayStatusPacket.LOGIN_FAILED_CLIENT;
+        proxy.getLogger().debug("CLIENT PROTOCOL = " + packet.getProtocolVersion());
+        if (packet.getProtocolVersion() != ProtocolInfo.CURRENT_PROTOCOL) {
+            status.setStatus(PlayStatusPacket.Status.FAILED_CLIENT);
             sendPacket(status, true);
             disconnect(proxy.getLang().get(Lang.MESSAGE_UNSUPPORTED_CLIENT));
             return;
@@ -341,13 +336,13 @@ public class UpstreamSession {
 
         // Verify the integrity of the LoginPacket
         if (proxy.getConfig().authenticate_players && !packet.decoded.isLoginVerified()) {
-            status.status = PlayStatusPacket.LOGIN_FAILED_INVALID_TENANT;
+            status.setStatus(PlayStatusPacket.Status.FAILED_INVALID_TENANT);
             sendPacket(status, true);
             disconnect(proxy.getLang().get(Lang.LOGIN_VERIFY_FAILED));
             return;
         }
 
-        status.status = PlayStatusPacket.LOGIN_SUCCESS;
+        status.setStatus(PlayStatusPacket.Status.LOGIN_SUCCESS);
         sendPacket(status, true);
 
         this.username = profile.username;
@@ -368,28 +363,28 @@ public class UpstreamSession {
         proxy.getLogger().info(proxy.getLang().get(Lang.MESSAGE_CLIENT_CONNECTED, username, remoteAddress));
         PlayerAuthenticationEvent authEvent = new PlayerAuthenticationEvent(this);
         proxy.getEventManager().callEvent(authEvent);
-        if(authEvent.isCancelled​())return;
+        if (authEvent.isCancelled​()) return;
 
         if (proxy.getAuthMode().equals("online")) {
             proxy.getLogger().debug("Login online mode, sending placeholder datas");
             StartGamePacket pkStartGame = new StartGamePacket();
-            pkStartGame.eid = getEntityCache().getClientEntity().proxyEid; // well we use 1 now
-            pkStartGame.rtid = getEntityCache().getClientEntity().proxyEid;
+            pkStartGame.setUniqueEntityId(getEntityCache().getClientEntity().proxyEid); // well we use 1 now
+            pkStartGame.setRuntimeEntityId(getEntityCache().getClientEntity().proxyEid);
             pkStartGame.dimension = 0;
             pkStartGame.seed = 0;
             pkStartGame.generator = 1;
             pkStartGame.difficulty = Difficulty.PEACEFUL;
             pkStartGame.spawnPosition = new BlockPosition(0, 72, 0);
             pkStartGame.position = new Vector3F(0f, 72f + EntityType.PLAYER.getOffset(), 0f);
-            pkStartGame.levelId = "";
-            pkStartGame.worldName = "World";
+            pkStartGame.setLevelId("");
+            pkStartGame.setWorldName("World");
             pkStartGame.defaultPlayerPermission = 2;
             pkStartGame.commandsEnabled = true;
-            pkStartGame.premiumWorldTemplateId = "";
+            pkStartGame.setPremiumWorldTemplateId("");
             sendPacket(pkStartGame, true);
 
             SetSpawnPositionPacket pkSpawn = new SetSpawnPositionPacket();
-            pkSpawn.position = new BlockPosition(0, 72, 0);
+            pkSpawn.setBlockPosition(new Vector3i(0, 72, 0));
             sendPacket(pkSpawn, true);
 
             ChunkData data = new ChunkData();
@@ -417,14 +412,14 @@ public class UpstreamSession {
             if (!CLSAuthenticationService.getInstance().authenticate(this)) {
                 if (getDataCache().containsKey("cls_link_server") && getDataCache().containsKey("cls_link_pin")) {
                     disconnect("You must link your Mojang account, please visit :\n"
-                            + (String) getDataCache().get("cls_link_server") + "\n"
-                            + "Your pin code is: " + (String) getDataCache().get("cls_link_pin"));
+                        + (String) getDataCache().get("cls_link_server") + "\n"
+                        + "Your pin code is: " + (String) getDataCache().get("cls_link_pin"));
                     return;
                 }
                 disconnect(proxy.getLang().get(Lang.MESSAGE_SERVER_ERROR, proxy.getLang().get(Lang.ERROR_CLS_UNREACHABLE)));
                 proxy.getLogger().severe(proxy.getLang()
-                        .get(Lang.MESSAGE_SERVER_ERROR, proxy.getLang().get(Lang.ERROR_CLS_UNREACHABLE))
-                        .replace("§c", "").replace("§0", ""));
+                    .get(Lang.MESSAGE_SERVER_ERROR, proxy.getLang().get(Lang.ERROR_CLS_UNREACHABLE))
+                    .replace("§c", "").replace("§0", ""));
                 return;
             }
             AuthenticationService authSvc = new AuthenticationService((String) dataCache.get("mojang_clientToken"));
@@ -469,14 +464,13 @@ public class UpstreamSession {
             return;
         }
         TextPacket text = new TextPacket(); // raw
-        text.type = TextPacket.TYPE_RAW;
-        text.message = chat;
+        text.setMessage(new RawMessage(chat));
         sendPacket(text, true);
     }
 
     public void sendFakeBlock(int x, int y, int z, int id, int meta) {
         UpdateBlockPacket pkBlock = new UpdateBlockPacket();
-        pkBlock.id = id;
+        pkBlock.setRuntimeId(id);
         pkBlock.data = meta;
         pkBlock.flags = UpdateBlockPacket.FLAG_NEIGHBORS;
         pkBlock.blockPosition = new BlockPosition(x, y, z);
@@ -484,30 +478,32 @@ public class UpstreamSession {
     }
 
     public void sendCreativeInventory() {
+        /*
         // main inventory
-//        ContainerId.CREATIVE.getId();
-//        InventoryContentPacket inventoryContentPacket = new InventoryContentPacket();
-//        inventoryContentPacket.windowId = ContainerId.INVENTORY.getId();
-//        Slot[] inventory = new Slot[36];
-//        for(int index = 0; index < inventory.length; index++) {
-//            inventory[index] = new Slot(0, 0, 0);
-//        }
-//        inventoryContentPacket.items = inventory;
-//        sendPacket(inventoryContentPacket);
-//
-//        // ? inventory
-//        InventoryContentPacket inventoryContentPacket2 = new InventoryContentPacket();
-//        inventoryContentPacket2.windowId = ContainerId.ARMOR.getId();
-//        Slot[] inventory2 = new Slot[4];
-//        for(int index = 0; index < inventory2.length; index++) {
-//            inventory2[index] = new Slot(0, 0, 0);
-//        }
-//        inventoryContentPacket2.items = inventory2;
-//        sendPacket(inventoryContentPacket2);
+        ContainerId.CREATIVE.getId();
+        InventoryContentPacket inventoryContentPacket = new InventoryContentPacket();
+        inventoryContentPacket.windowId = ContainerId.INVENTORY.getId();
+        Slot[] inventory = new Slot[36];
+        for(int index = 0; index < inventory.length; index++) {
+            inventory[index] = new Slot(0, 0, 0);
+        }
+        inventoryContentPacket.items = inventory;
+        sendPacket(inventoryContentPacket);
+
+        // ? inventory
+        InventoryContentPacket inventoryContentPacket2 = new InventoryContentPacket();
+        inventoryContentPacket2.windowId = ContainerId.ARMOR.getId();
+        Slot[] inventory2 = new Slot[4];
+        for(int index = 0; index < inventory2.length; index++) {
+            inventory2[index] = new Slot(0, 0, 0);
+        }
+        inventoryContentPacket2.items = inventory2;
+        sendPacket(inventoryContentPacket2);
+        */
 
         // creative inventory
         InventoryContentPacket inventoryContentPacket3 = new InventoryContentPacket();
-        inventoryContentPacket3.windowId = ContainerId.CREATIVE.getId();
+        inventoryContentPacket3.setWindowId(ContainerId.CREATIVE.getId());
         inventoryContentPacket3.items = BlockEnum.getCreativeBlocks().stream().toArray(Slot[]::new);
         sendPacket(inventoryContentPacket3);
     }
@@ -516,11 +512,10 @@ public class UpstreamSession {
         packetProcessor.putPacket(packet);
     }
 
-    public void putCachePacket(PEPacket packet) {
+    public void putCachePacket(NetworkPacket packet) {
         if (packet == null)
             return;
         if (spawned) {
-            //            System.out.println("Not caching since already spawned! ");
             sendPacket(packet);
             return;
         }
@@ -530,9 +525,12 @@ public class UpstreamSession {
     public void onTick() {
         entityCache.onTick();
         chunkCache.onTick();
-        if (packetProcessor != null)
+        if (packetProcessor != null) {
             packetProcessor.onTick();
+        }
         if (downstream != null)
             downstream.onTick();
+        }
     }
+
 }

@@ -21,23 +21,23 @@ import org.dragonet.protocol.PEPacket;
 
 public class PCWindowItemsTranslator implements IPCPacketTranslator<ServerWindowItemsPacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerWindowItemsPacket packet) {
-        if (!session.getWindowCache().hasWindow(packet.getWindowId())) {
+    public PEPacket[] translate(UpstreamSession session, ServerWindowItemsPacket originalPacket) {
+        if (!session.getWindowCache().hasWindow(originalPacket.getWindowId())) {
             // Cache this
-            session.getWindowCache().newCachedPacket(packet.getWindowId(), packet);
+            session.getWindowCache().newCachedPacket(originalPacket.getWindowId(), originalPacket);
             return null;
         }
-        CachedWindow win = session.getWindowCache().get(packet.getWindowId());
-        if (packet.getWindowId() == 0) {
-            if (packet.getItems().length < 40) {
+        CachedWindow win = session.getWindowCache().get(originalPacket.getWindowId());
+        if (originalPacket.getWindowId() == 0) {
+            if (originalPacket.getItems().length < 40) {
                 // Almost impossible to happen either.
                 return null;
             }
             // Update items in window cache
-            win.slots = packet.getItems();
+            win.slots = originalPacket.getItems();
             return InventoryTranslatorRegister.sendPlayerInventory(session);
         }
-        InventoryTranslatorRegister.updateContent(session, packet);
+        InventoryTranslatorRegister.updateContent(session, originalPacket);
         return null;
     }
 

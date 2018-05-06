@@ -13,20 +13,20 @@ import org.dragonet.protocol.packets.MobEquipmentPacket;
 public class PCEntityEquipmentPacketTranslator implements IPCPacketTranslator<ServerEntityEquipmentPacket> {
 
     @Override
-    public PEPacket[] translate(UpstreamSession session, ServerEntityEquipmentPacket packet) {
-        CachedEntity entity = session.getEntityCache().getByRemoteEID(packet.getEntityId());
+    public PEPacket[] translate(UpstreamSession session, ServerEntityEquipmentPacket originalPacket) {
+        CachedEntity entity = session.getEntityCache().getByRemoteEID(originalPacket.getEntityId());
         if (entity == null) {
-            if (packet.getEntityId() == (int) session.getDataCache().get(CacheKey.PLAYER_EID)) {
+            if (originalPacket.getEntityId() == (int) session.getDataCache().get(CacheKey.PLAYER_EID)) {
                 entity = session.getEntityCache().getClientEntity();
             } else {
                 return null;
             }
         }
 
-        ItemStack items = packet.getItem();
+        ItemStack items = originalPacket.getItem();
         boolean handModified = false;
 
-        switch (packet.getSlot()) {
+        switch (originalPacket.getSlot()) {
             case HELMET:
                 entity.helmet = ItemBlockTranslator.translateSlotToPE(items);
                 break;

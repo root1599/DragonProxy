@@ -24,18 +24,18 @@ import org.dragonet.protocol.packets.UpdateAttributesPacket;
 
 public class PCEntityPropertiesPacketTranslator implements IPCPacketTranslator<ServerEntityPropertiesPacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerEntityPropertiesPacket packet) {
+    public PEPacket[] translate(UpstreamSession session, ServerEntityPropertiesPacket originalPacket) {
 
-        CachedEntity entity = session.getEntityCache().getByRemoteEID(packet.getEntityId());
+        CachedEntity entity = session.getEntityCache().getByRemoteEID(originalPacket.getEntityId());
         if (entity == null) {
-            if (packet.getEntityId() == (int) session.getDataCache().get(CacheKey.PLAYER_EID)) {
+            if (originalPacket.getEntityId() == (int) session.getDataCache().get(CacheKey.PLAYER_EID)) {
                 entity = session.getEntityCache().getClientEntity();
             } else {
                 return null;
             }
         }
 
-        for (Attribute attr : packet.getAttributes()) {
+        for (Attribute attr : originalPacket.getAttributes()) {
             switch (attr.getType()) {
                 case GENERIC_FOLLOW_RANGE:
                     entity.attributes.put(PEEntityAttribute.FOLLOW_RANGE, PEEntityAttribute.findAttribute(PEEntityAttribute.FOLLOW_RANGE).setValue((float) attr.getValue()));

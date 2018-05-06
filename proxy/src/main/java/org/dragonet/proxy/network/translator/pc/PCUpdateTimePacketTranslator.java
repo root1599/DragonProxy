@@ -20,9 +20,9 @@ import org.dragonet.protocol.packets.SetTimePacket;
 
 public class PCUpdateTimePacketTranslator implements IPCPacketTranslator<ServerUpdateTimePacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerUpdateTimePacket packet) {
+    public PEPacket[] translate(UpstreamSession session, ServerUpdateTimePacket originalPacket) {
         SetTimePacket pk = new SetTimePacket();
-        pk.time = (int) Math.abs(packet.getTime());
+        pk.time = (int) Math.abs(originalPacket.getTime());
         return new PEPacket[]{pk};
     }
 }

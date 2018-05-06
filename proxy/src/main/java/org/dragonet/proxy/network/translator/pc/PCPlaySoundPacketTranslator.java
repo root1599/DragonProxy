@@ -26,31 +26,31 @@ import org.dragonet.protocol.packets.PlaySoundPacket;
 
 public class PCPlaySoundPacketTranslator implements IPCPacketTranslator<ServerPlaySoundPacket> {
 
-	public PEPacket[] translate(UpstreamSession session, ServerPlaySoundPacket packet) {
+	public PEPacket[] translate(UpstreamSession session, ServerPlaySoundPacket originalPacket) {
 		try {
 			String soundName;
 			
-			if (BuiltinSound.class.isAssignableFrom(packet.getSound().getClass())) {
-				if(DragonProxy.getInstance().getSoundTranslator().isIgnored((BuiltinSound)packet.getSound())) {
+			if (BuiltinSound.class.isAssignableFrom(originalPacket.getSound().getClass())) {
+				if(DragonProxy.getInstance().getSoundTranslator().isIgnored((BuiltinSound) originalPacket.getSound())) {
 					return null;
 				}
-				if (DragonProxy.getInstance().getSoundTranslator().isTranslatable((BuiltinSound)packet.getSound())) {
-					soundName = DragonProxy.getInstance().getSoundTranslator().translate((BuiltinSound)packet.getSound());
+				if (DragonProxy.getInstance().getSoundTranslator().isTranslatable((BuiltinSound) originalPacket.getSound())) {
+					soundName = DragonProxy.getInstance().getSoundTranslator().translate((BuiltinSound) originalPacket.getSound());
 				} else {
-					BuiltinSound sound = (BuiltinSound) packet.getSound();
+					BuiltinSound sound = (BuiltinSound) originalPacket.getSound();
 					soundName = sound.name();
 				}
 			} else {
-				soundName = ((CustomSound) packet.getSound()).getName();
+				soundName = ((CustomSound) originalPacket.getSound()).getName();
 			}
 			if (soundName == null) {
 				return null;
 			}
 			PlaySoundPacket pk = new PlaySoundPacket();
-			pk.blockPosition = new BlockPosition((int) packet.getX(), (int) packet.getY(), (int) packet.getZ());
+			pk.blockPosition = new BlockPosition((int) originalPacket.getX(), (int) originalPacket.getY(), (int) originalPacket.getZ());
 			pk.name = soundName;
-			pk.volume = packet.getVolume();
-			pk.pitch = packet.getPitch();
+			pk.volume = originalPacket.getVolume();
+			pk.pitch = originalPacket.getPitch();
 			return new PEPacket[] { pk };
 		} catch (Exception e) {
 			e.printStackTrace();

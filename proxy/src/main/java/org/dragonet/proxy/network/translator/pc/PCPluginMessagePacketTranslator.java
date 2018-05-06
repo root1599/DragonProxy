@@ -35,9 +35,9 @@ public class PCPluginMessagePacketTranslator implements IPCPacketTranslator<Serv
 	public static final String CHANNEL_MC_TR_LIST = "MC|TrList";
 	
 	@Override
-	public PEPacket[] translate(UpstreamSession session, ServerPluginMessagePacket packet) {
-		String channel = packet.getChannel();
-		BinaryStream bis = new BinaryStream(packet.getData());
+	public PEPacket[] translate(UpstreamSession session, ServerPluginMessagePacket originalPacket) {
+		String channel = originalPacket.getChannel();
+		BinaryStream bis = new BinaryStream(originalPacket.getData());
 		
 		if(channel.equals(CHANNEL_DRAGONPROXY)) {
 			String command = bis.getString();

@@ -20,8 +20,8 @@ import org.dragonet.protocol.PEPacket;
 
 public class PCUnloadChunkDataPacketTranslator implements IPCPacketTranslator<ServerUnloadChunkPacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerUnloadChunkPacket packet) {
-        session.getChunkCache().remove(packet.getX(), packet.getZ());
+    public PEPacket[] translate(UpstreamSession session, ServerUnloadChunkPacket originalPacket) {
+        session.getChunkCache().remove(originalPacket.getX(), originalPacket.getZ());
         return null;
     }
 }

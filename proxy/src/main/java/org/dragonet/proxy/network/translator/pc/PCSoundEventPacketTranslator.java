@@ -27,14 +27,14 @@ import org.dragonet.protocol.packets.PlaySoundPacket;
 
 public class PCSoundEventPacketTranslator implements IPCPacketTranslator<ServerPlayBuiltinSoundPacket> {
 
-    public PEPacket[] translate(UpstreamSession session, ServerPlayBuiltinSoundPacket packet) {
+    public PEPacket[] translate(UpstreamSession session, ServerPlayBuiltinSoundPacket originalPacket) {
     	LevelSoundEventPacket pk = new LevelSoundEventPacket();
 
         //System.out.println("BuiltIn Sound packet: " + packet.getSound().name());
 
-        pk.position = new Vector3F((float) packet.getX(), (float) packet.getY(), (float) packet.getZ());
+        pk.position = new Vector3F((float) originalPacket.getX(), (float) originalPacket.getY(), (float) originalPacket.getZ());
 
-        switch (packet.getSound()) {
+        switch (originalPacket.getSound()) {
 
             case BLOCK_CHEST_OPEN:
                 pk.sound = LevelSoundEventPacket.Sound.CHEST_OPEN;
@@ -386,12 +386,12 @@ public class PCSoundEventPacketTranslator implements IPCPacketTranslator<ServerP
 
         //System.out.println("Converted sound packet " + pk.sound.name() + " (" + pk.sound.soundID + ") - " + pk.position + " - " + pk.extraData + " - " + pk.pitch);
         if(pk.sound == null) {
-        	if(!DragonProxy.getInstance().getSoundTranslator().isIgnored(packet.getSound()) && DragonProxy.getInstance().getSoundTranslator().isTranslatable(packet.getSound())) {
+        	if(!DragonProxy.getInstance().getSoundTranslator().isIgnored(originalPacket.getSound()) && DragonProxy.getInstance().getSoundTranslator().isTranslatable(originalPacket.getSound())) {
         		PlaySoundPacket npacket = new PlaySoundPacket();
-        		npacket.blockPosition = new BlockPosition((int) packet.getX(), (int) packet.getY(), (int) packet.getZ());
-        		npacket.name = DragonProxy.getInstance().getSoundTranslator().translate(packet.getSound());
-        		npacket.volume = packet.getVolume();
-        		npacket.pitch = packet.getPitch();
+        		npacket.blockPosition = new BlockPosition((int) originalPacket.getX(), (int) originalPacket.getY(), (int) originalPacket.getZ());
+        		npacket.name = DragonProxy.getInstance().getSoundTranslator().translate(originalPacket.getSound());
+        		npacket.volume = originalPacket.getVolume();
+        		npacket.pitch = originalPacket.getPitch();
         		return new PEPacket[]{npacket}; // USE PlaySoundPacket if sound id is not founded
         	}
         	return null;
