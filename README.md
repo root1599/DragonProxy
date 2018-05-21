@@ -1,4 +1,4 @@
-# DragonProxy - This is unonficcial version
+# DragonProxy - This is not offical version
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
 [![Chat](https://img.shields.io/badge/chat-on%20discord-7289da.svg)](https://discord.gg/CmkxTz2)
@@ -14,7 +14,7 @@ __Some servers anticheats trigger some movments cheat, use at your own risks.__
 If you get banned from a server, we do not take responsabilities.
   
 ## Features
-- Currently supporting Bedrock 1.2.13 and Java 1.12.2
+- Currently supporting Bedrock 1.4.0 and Java 1.12.2
 - Chat supported
 - Chunks supported
 - Movement supported
